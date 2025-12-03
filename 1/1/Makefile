@@ -7,8 +7,19 @@ SRC=main.c
 OBJS=$(SRC:.c=.o)
 CFLAGS=
 
+all:$(EXE_FILE)
+
+rebuild: clean all
+
+debug: CFLAGS += -g
+debug: $(EXE_FILE)
+
 $(EXE_FILE): $(OBJS)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 $(OBJS): $(SRC)
 	$(CC) -c -o $@ $< $(CFLAGS)
+
+.PHONY: clean
+clean:
+	Del $(EXE_FILE) $(OBJS)
