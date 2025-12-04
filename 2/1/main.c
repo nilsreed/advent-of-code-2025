@@ -41,7 +41,7 @@ void decode_ranges(char* line, int no_ranges, range_t* ranges)
     find_mode_t mode = FIND_MIN;
     int range_no = 0;
 
-    for(int i = 0; i < strlen(line); i++)
+    for(int i = 0; i < strlen(line) + 1; i++)
     {
         if (mode == FIND_MIN)
         {
@@ -67,7 +67,7 @@ void decode_ranges(char* line, int no_ranges, range_t* ranges)
         }
         else // mode == FIND_MAX
         {
-            if((line[i] != ',') && (i != strlen(line) - 1)) // TODO fix reading of last number on line
+            if((line[i] != ',') && (line[i] != '\0'))
             {
                 tmp_line_buf[digits] = line[i];
                 digits++;
