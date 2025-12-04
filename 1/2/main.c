@@ -54,7 +54,7 @@ int rotate(dir_t direction, int current_pos, int clicks, int *zero_passes)
             }
             else
             {
-                new_pos = (MAX_CLICKS + (current_pos - clicks)) % MAX_CLICKS;
+                new_pos = (MAX_CLICKS + ((current_pos - clicks) % MAX_CLICKS)) % MAX_CLICKS;
             }
         }
         else if (direction == RIGHT)
@@ -118,15 +118,11 @@ int main(void)
 
     while (fgets(line, sizeof(line), fp))
     {
-        printf("pos %-2d, ", position);
         dir = decode_direction(line[0]);
         clicks = decode_clicks(&line[1]);
         position = rotate(dir, position, clicks, &zero_passes);
 
         num_zeroes += zero_passes;
-        if (dir == LEFT) printf("dir: LEFT,  ");
-        if (dir == RIGHT) printf("dir: RIGHT, ");
-        printf("Clicks %-5d, New pos: %-2d, zero passes %-3d\n", clicks, position, zero_passes);
     }
 
     printf("The code is %d\n", num_zeroes);
