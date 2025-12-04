@@ -61,18 +61,16 @@ int decode_clicks(char* clicks_str)
 {
     int num_clicks = -1;
 
-    // maybe not a good way to do this?
-    char* tmp_str = strdup(clicks_str);
-    for(int i = 0; i < strlen(clicks_str); i++)
+    for (int i = 0; i < MAX_LINE_SIZE; i++)
     {
         if(clicks_str[i] < ASCII_ZERO || clicks_str[i] > ASCII_NINE)
         {
-            tmp_str[i] = '\0';
+            clicks_str[i] = '\0';
+            break;
         }
     }
 
-    num_clicks = atoi(tmp_str);
-    free(tmp_str);
+    num_clicks = atoi(clicks_str);
     return num_clicks;
 }
 
