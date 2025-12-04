@@ -11,8 +11,8 @@
 #define ASCII_ZERO 48
 #define ASCII_NINE ASCII_ZERO + 9
 
-
-typedef enum dir {
+typedef enum dir
+{
     LEFT,
     RIGHT,
     INVAL_DIR
@@ -30,7 +30,7 @@ int rotate(dir_t direction, int current_pos, int clicks)
             {
                 new_pos = current_pos - clicks;
             }
-            else 
+            else
             {
                 new_pos = (MAX_CLICKS + (current_pos - clicks)) % MAX_CLICKS;
             }
@@ -57,13 +57,13 @@ dir_t decode_direction(char d)
     return INVAL_DIR;
 }
 
-int decode_clicks(char* clicks_str)
+int decode_clicks(char *clicks_str)
 {
     int num_clicks = -1;
 
     for (int i = 0; i < MAX_LINE_SIZE; i++)
     {
-        if(clicks_str[i] < ASCII_ZERO || clicks_str[i] > ASCII_NINE)
+        if (clicks_str[i] < ASCII_ZERO || clicks_str[i] > ASCII_NINE)
         {
             clicks_str[i] = '\0';
             break;
@@ -73,7 +73,6 @@ int decode_clicks(char* clicks_str)
     num_clicks = atoi(clicks_str);
     return num_clicks;
 }
-
 
 int main(void)
 {
