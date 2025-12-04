@@ -18,7 +18,29 @@ typedef enum dir
     INVAL_DIR
 } dir_t;
 
-int rotate(dir_t direction, int current_pos, int clicks)
+int calc_zero_passes(dir_t direction, int current_pos, int next_pos, int clicks)
+{
+    int passes = 0;
+
+    passes += (clicks / MAX_CLICKS);
+
+    if (next_pos == 0)
+    {
+        passes += 1;
+    }
+
+    if (current_pos != 0)
+    {
+        if (((direction == LEFT) && (current_pos < (clicks % MAX_CLICKS))) ||
+            ((direction == RIGHT) && ((current_pos + (clicks % MAX_CLICKS)) > MAX_CLICKS)))
+        {
+            passes += 1;
+        }
+    }
+    return passes;
+}
+
+int rotate(dir_t direction, int current_pos, int clicks, int *zero_passes)
 {
     int new_pos = -1;
 
@@ -32,7 +54,7 @@ int rotate(dir_t direction, int current_pos, int clicks)
             }
             else
             {
-                new_pos = (MAX_CLICKS + ((current_pos - clicks) % MAX_CLICKS)) % MAX_CLICKS;
+                new_pos = (MAX_CLICKS + (current_pos - clicks)) % MAX_CLICKS;
             }
         }
         else if (direction == RIGHT)
@@ -40,6 +62,8 @@ int rotate(dir_t direction, int current_pos, int clicks)
             new_pos = (current_pos + clicks) % MAX_CLICKS;
         }
     }
+
+    *zero_passes = calc_zero_passes(direction, current_pos, new_pos, clicks);
 
     return new_pos;
 }
@@ -83,6 +107,7 @@ int main(void)
     int clicks = -1;
     int position = STARTING_POS;
     int num_zeroes = 0;
+    int zero_passes = 0;
 
     fp = fopen(INPUT_FILE, "r");
     if (fp == NULL)
@@ -93,14 +118,15 @@ int main(void)
 
     while (fgets(line, sizeof(line), fp))
     {
+        printf("pos %-2d, ", position);
         dir = decode_direction(line[0]);
         clicks = decode_clicks(&line[1]);
-        position = rotate(dir, position, clicks);
+        position = rotate(dir, position, clicks, &zero_passes);
 
-        if (position == 0)
-        {
-            num_zeroes++;
-        }
+        num_zeroes += zero_passes;
+        if (dir == LEFT) printf("dir: LEFT,  ");
+        if (dir == RIGHT) printf("dir: RIGHT, ");
+        printf("Clicks %-5d, New pos: %-2d, zero passes %-3d\n", clicks, position, zero_passes);
     }
 
     printf("The code is %d\n", num_zeroes);
