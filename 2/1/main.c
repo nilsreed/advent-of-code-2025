@@ -106,7 +106,11 @@ int find_invalid_ids(range_t id_range)
     int no_invalid_ids = 0;
     if (id_range.min_trunk <= id_range.max_trunk)
     {
-
+        // Convert both max and min to char*
+        // Check if its even possible to get errors with those strings - HOW?
+        // If not break
+        // Else change only one digit at a time?
+        // Maybe be smart and see if it even can be possible to make inval id?
     }
     return no_invalid_ids;
 }
