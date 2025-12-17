@@ -5,13 +5,16 @@ CC=gcc
 SRC=main.c
 OBJS=$(SRC:.c=.o)
 CFLAGS=
+LDLIBS=-lm
 
 ifeq ($(OS),Windows_NT)
 	EXE_FILE=main.exe
+	RM_COMMAND=Del
 else
 	UNAME := $(shell uname -s)
 	ifeq ($(UNAME),Linux)
 		EXE_FILE=main
+		RM_COMMAND=rm
 	else
 		$(error Unsupported OS)
 	endif
@@ -26,11 +29,11 @@ debug: CFLAGS += -g
 debug: $(EXE_FILE)
 
 $(EXE_FILE): $(OBJS)
-	$(CC) -o $@ $^ $(CFLAGS)
+	$(CC) -o $@ $^ $(CFLAGS) $(LDLIBS)
 
 $(OBJS): $(SRC)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 .PHONY: clean
 clean:
-	Del $(EXE_FILE) $(OBJS)
+	$(RM_COMMAND) $(EXE_FILE) $(OBJS)
