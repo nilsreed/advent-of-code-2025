@@ -44,7 +44,7 @@ void decode_ranges(char* line, int no_ranges, range_t* ranges)
     find_mode_t mode = FIND_MIN;
     int range_no = 0;
 
-    for(int i = 0; i < strlen(line) + 1; i++)
+    for(size_t i = 0; i < strlen(line) + 1; i++)
     {
         if (mode == FIND_MIN)
         {
