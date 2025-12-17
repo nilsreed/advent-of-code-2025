@@ -2,10 +2,21 @@
 # https://stackoverflow.com/questions/28559338/makefile-to-convert-all-c-to-o
 
 CC=gcc
-EXE_FILE=main.exe
 SRC=main.c
 OBJS=$(SRC:.c=.o)
 CFLAGS=
+
+ifeq ($(OS),Windows_NT)
+	EXE_FILE=main.exe
+else
+	UNAME := $(shell uname -s)
+	ifeq ($(UNAME),Linux)
+		EXE_FILE=main
+	else
+		$(error Unsupported OS)
+	endif
+endif
+
 
 all:$(EXE_FILE)
 
