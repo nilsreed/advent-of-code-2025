@@ -3,17 +3,20 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define INPUT_FILE "./example_input.txt"
+#define INPUT_FILE "./input.txt"
 #define INPUT_LINE_SIZE_MAX 1024
 #define TMP_BUF_SIZE_MAX 16
+#define ASCII_ZERO 48
+#define ASCII_NINE ASCII_ZERO + 9
 
 
 typedef struct range
 {
-    int min;
-    int min_trunk;
-    int max;
-    int max_trunk;
+    long long int min;
+    long long int min_trunk;
+    long long int max;
+    long long int max_trunk;
+    int digits;
 } range_t;
 
 typedef enum find_mode
@@ -56,16 +59,19 @@ void decode_ranges(char* line, int no_ranges, range_t* ranges)
             else
             {
                 tmp_line_buf[digits + 1] = '\0';
-                ranges[range_no].min = atoi(tmp_line_buf);
+                ranges[range_no].min = atoll(tmp_line_buf);
 
                 if (digits % 2 == 1)
                 {
-                    ranges[range_no].min_trunk = (int)pow(10.0, (double)(digits));
+                    ranges[range_no].min_trunk = (long long)pow(10.0, (double)(digits));
+                    ranges[range_no].digits = digits + 1;
                 }
                 else
                 {
                     ranges[range_no].min_trunk = ranges[range_no].min;
+                    ranges[range_no].digits = digits;
                 }
+
                 mode = FIND_MAX;
                 digits = 0;
                 memset(tmp_line_buf, 0, TMP_BUF_SIZE_MAX);
@@ -82,11 +88,11 @@ void decode_ranges(char* line, int no_ranges, range_t* ranges)
             else
             {
                 tmp_line_buf[digits + 1] = '\0';
-                ranges[range_no].max = atoi(tmp_line_buf);
+                ranges[range_no].max = atoll(tmp_line_buf);
 
                 if (digits % 2 == 1)
                 {
-                    ranges[range_no].max_trunk = (int)pow(10.0,(double)(digits - 1)) - 1;
+                    ranges[range_no].max_trunk = (long long int)pow(10.0,(double)(digits - 1)) - 1;
                 }
                 else
                 {
@@ -95,24 +101,68 @@ void decode_ranges(char* line, int no_ranges, range_t* ranges)
                 mode = FIND_MIN;
                 digits = 0;
                 memset(tmp_line_buf, 0, TMP_BUF_SIZE_MAX);
+
                 range_no++;
             }
         }
     }
 }
 
-int find_invalid_ids(range_t id_range)
+void find_invalid_ids(range_t id_range, long long int** inval_ids, int* no_inval_ids)
 {
-    int no_invalid_ids = 0;
-    if (id_range.min_trunk <= id_range.max_trunk)
+    *no_inval_ids = 0;
+    if (((id_range.digits % 2) == 0) && id_range.min_trunk <= id_range.max_trunk)
     {
-        // Convert both max and min to char*
-        // Check if its even possible to get errors with those strings - HOW?
-        // If not break
-        // Else change only one digit at a time?
-        // Maybe be smart and see if it even can be possible to make inval id?
+        char *min;
+        min = calloc(id_range.digits + 1, sizeof(char));
+        if (min == NULL)
+        {
+            printf("ERROR: unable to allocate char buffer for min");
+            *no_inval_ids = -1;
+            return;
+        }
+
+        snprintf(min, id_range.digits + 1, "%lld", id_range.min_trunk);
+
+        long long int current = id_range.min_trunk;
+        // BRUTE FORCE BABYY
+        while (current <= id_range.max_trunk)
+        {
+            if (memcmp(min, &min[id_range.digits / 2], id_range.digits / 2) == 0)
+            {
+                (*no_inval_ids)++;
+                long long int* tmp_inval_ids = realloc(*inval_ids, (*no_inval_ids)*sizeof(long long int));
+                if (tmp_inval_ids == NULL)
+                {
+                    if (*no_inval_ids > 0)
+                    {
+                        free(*inval_ids);
+                        *no_inval_ids = -1;
+                    }
+                    break;
+                }
+
+                *inval_ids = tmp_inval_ids;
+                (*inval_ids)[*no_inval_ids - 1] = current;
+            }
+
+            for (int i = id_range.digits - 1; i >= 0; i--)
+            {
+                if (min[i] == ASCII_NINE)
+                {
+                    min[i] = ASCII_ZERO;
+                }
+                else
+                {
+                    min[i]++;
+                    break;
+                }
+            }
+            current++;
+        }
+        free(min);
     }
-    return no_invalid_ids;
+    return;
 }
 
 int main(void)
@@ -120,7 +170,7 @@ int main(void)
     FILE* fp;
     range_t* ranges = NULL;
     char input_line[INPUT_LINE_SIZE_MAX];
-    int sum_of_invalid_ids = 0;
+    long long int sum_of_invalid_ids = 0;
 
     fp = fopen(INPUT_FILE, "r");
     if (fp == NULL)
@@ -148,13 +198,41 @@ int main(void)
 
     decode_ranges(input_line, no_ranges, ranges);
 
+    long long int* invalid_ids = NULL;
+    int no_invalid_ids = 0;
+
     for (int i = 0; i < no_ranges; i++)
     {
-//        sum_of_invalid_ids += find_invalid_ids(ranges[i]);
-        printf("range_no: %2d min: %10d, max %10d, min_trunk: %10d, max_trunk %10d\n", i, ranges[i].min, ranges[i].max, ranges[i].min_trunk, ranges[i].max_trunk);
+        find_invalid_ids(ranges[i], &invalid_ids, &no_invalid_ids);
+        if (no_invalid_ids > 0)
+        {
+            printf("%2d Invalid IDs in range %d-%d (trunk: %d-%d) (digits: %d): ", no_invalid_ids, ranges[i].min, ranges[i].max, ranges[i].min_trunk, ranges[i].max_trunk, ranges[i].digits);
+            for (int j = 0; j < no_invalid_ids - 1; j++)
+            {
+                printf("%d, ", invalid_ids[j]);
+            }
+            printf("%d\n", invalid_ids[no_invalid_ids - 1]);
+
+
+            for (int j = 0; j < no_invalid_ids; j++)
+            {
+                sum_of_invalid_ids += invalid_ids[j];
+            }
+
+            free(invalid_ids);
+            invalid_ids = NULL;
+        }
+        else if (no_invalid_ids == -1)
+        {
+            printf("ERROR: find_invalid_ids returned -1!\n");
+        }
+        else if (no_invalid_ids == 0)
+        {
+            printf("No invalid IDs in range %d-%d (trunk: %d-%d) (digits: %d)\n", ranges[i].min, ranges[i].max, ranges[i].min_trunk, ranges[i].max_trunk, ranges[i].digits);
+        }
     }
 
-    printf("The sum of the invalid ids is: %d\n", sum_of_invalid_ids);
+    printf("The sum of the invalid ids is: %lld\n", sum_of_invalid_ids);
     free(ranges);
     fclose(fp);
 
