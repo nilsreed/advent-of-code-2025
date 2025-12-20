@@ -6,7 +6,7 @@
 #define MAX_LINE_SIZE 128
 #define ASCII_ZERO 48
 
-void find_largest_digit(char* str, size_t len, int* max_digit, int* max_digit_index)
+void find_largest_digit(char *str, size_t len, int *max_digit, int *max_digit_index)
 {
     *max_digit_index = -1;
     char current_max = ASCII_ZERO;
@@ -55,7 +55,7 @@ int find_maximum_joltage(char *battery_bank)
             }
             else
             {
-                max_joltage += max_digit*10;
+                max_joltage += max_digit * 10;
             }
         }
         else
