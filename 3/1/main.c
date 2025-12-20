@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,6 +6,7 @@
 #define INPUT_FILE "./input.txt"
 #define MAX_LINE_SIZE 128
 #define ASCII_ZERO 48
+#define NO_DIGITS 2
 
 void find_largest_digit(char *str, size_t len, int *max_digit, int *max_digit_index)
 {
@@ -29,49 +31,22 @@ void find_largest_digit(char *str, size_t len, int *max_digit, int *max_digit_in
     }
 }
 
-int find_maximum_joltage(char *battery_bank)
+long long int find_maximum_joltage(char *battery_bank, size_t battery_bank_size)
 {
     int max_digit = -1;
-    int max_joltage = 0;
+    long long int max_joltage = 0;
     int max_index = -1;
+    int offset = 0;
+    int effective_length = battery_bank_size - (size_t)(NO_DIGITS - 1);
 
-    size_t battery_bank_size = strlen(battery_bank) - 1;
-
-    find_largest_digit(battery_bank, battery_bank_size, &max_digit, &max_index);
-
-    if (max_index == -1)
+    for (int i = 0; i < NO_DIGITS; i++)
     {
-        max_joltage = -1;
+        find_largest_digit(&battery_bank[offset], effective_length, &max_digit, &max_index);
+        max_joltage += (long long int)max_digit * ((long long int)(pow(10.0, (double)(NO_DIGITS - (i + 1)))));
+        offset += max_index + 1;
+        effective_length = battery_bank_size - (size_t)(offset - 1) - (size_t)(NO_DIGITS - 1 - i);
     }
-    else
-    {
-        if (max_index == (battery_bank_size - 1))
-        {
-            max_joltage += max_digit;
-            find_largest_digit(battery_bank, battery_bank_size - 1, &max_digit, &max_index);
-            if (max_index == -1)
-            {
-                max_joltage = -1;
-            }
-            else
-            {
-                max_joltage += max_digit * 10;
-            }
-        }
-        else
-        {
-            max_joltage += max_digit * 10;
-            find_largest_digit(&battery_bank[max_index + 1], battery_bank_size - max_index - 1, &max_digit, &max_index);
-            if (max_index == -1)
-            {
-                max_joltage = -1;
-            }
-            else
-            {
-                max_joltage += max_digit;
-            }
-        }
-    }
+
     return max_joltage;
 }
 
@@ -80,7 +55,7 @@ int main(void)
     int str_pos = 0;
     FILE *fp;
     char line[MAX_LINE_SIZE];
-    int sum_of_max_joltages = 0;
+    long long int sum_of_max_joltages = 0;
 
     fp = fopen(INPUT_FILE, "r");
     if (fp == NULL)
@@ -92,7 +67,14 @@ int main(void)
     memset(line, 0, MAX_LINE_SIZE);
     while (fgets(line, sizeof(line), fp))
     {
-        int max_joltage = find_maximum_joltage(line);
+        size_t line_len = strlen(line);
+        if (line[line_len - 1] == '\n')
+        {
+            line[line_len - 1] = '\0';
+            line_len--;
+        }
+
+        long long int max_joltage = find_maximum_joltage(line, line_len);
         if (max_joltage <= 0)
         {
             printf("ERROR zero or negative max joltage\n");
@@ -102,7 +84,7 @@ int main(void)
         memset(line, 0, MAX_LINE_SIZE);
     }
 
-    printf("The sum of the maximum joltages is %d\n", sum_of_max_joltages);
+    printf("The sum of the maximum joltages is %lld\n", sum_of_max_joltages);
     fclose(fp);
 
     return 0;
