@@ -1,14 +1,13 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define INPUT_FILE "./input.txt"
 #define INPUT_LINE_SIZE_MAX 1024
 #define TMP_BUF_SIZE_MAX 16
 #define ASCII_ZERO 48
 #define ASCII_NINE ASCII_ZERO + 9
-
 
 typedef struct range
 {
@@ -25,7 +24,7 @@ typedef enum find_mode
     FIND_MAX
 } find_mode_t;
 
-int count_commas(char* line)
+int count_commas(char *line)
 {
     int commas = 0;
     for (size_t i = 0; i < strlen(line); i++)
@@ -38,7 +37,7 @@ int count_commas(char* line)
     return commas;
 }
 
-void decode_ranges(char* line, int no_ranges, range_t* ranges)
+void decode_ranges(char *line, int no_ranges, range_t *ranges)
 {
     char tmp_line_buf[TMP_BUF_SIZE_MAX];
     int digits = 0;
@@ -47,11 +46,11 @@ void decode_ranges(char* line, int no_ranges, range_t* ranges)
     find_mode_t mode = FIND_MIN;
     int range_no = 0;
 
-    for(size_t i = 0; i < strlen(line) + 1; i++)
+    for (size_t i = 0; i < strlen(line) + 1; i++)
     {
         if (mode == FIND_MIN)
         {
-            if(line[i] != '-')
+            if (line[i] != '-')
             {
                 tmp_line_buf[digits] = line[i];
                 digits++;
@@ -75,12 +74,11 @@ void decode_ranges(char* line, int no_ranges, range_t* ranges)
                 mode = FIND_MAX;
                 digits = 0;
                 memset(tmp_line_buf, 0, TMP_BUF_SIZE_MAX);
-
             }
         }
         else // mode == FIND_MAX
         {
-            if((line[i] != ',') && (line[i] != '\0'))
+            if ((line[i] != ',') && (line[i] != '\0'))
             {
                 tmp_line_buf[digits] = line[i];
                 digits++;
@@ -92,7 +90,7 @@ void decode_ranges(char* line, int no_ranges, range_t* ranges)
 
                 if (digits % 2 == 1)
                 {
-                    ranges[range_no].max_trunk = (long long int)pow(10.0,(double)(digits - 1)) - 1;
+                    ranges[range_no].max_trunk = (long long int)pow(10.0, (double)(digits - 1)) - 1;
                 }
                 else
                 {
@@ -108,7 +106,7 @@ void decode_ranges(char* line, int no_ranges, range_t* ranges)
     }
 }
 
-void find_invalid_ids(range_t id_range, long long int** inval_ids, int* no_inval_ids)
+void find_invalid_ids(range_t id_range, long long int **inval_ids, int *no_inval_ids)
 {
     *no_inval_ids = 0;
     if (((id_range.digits % 2) == 0) && id_range.min_trunk <= id_range.max_trunk)
@@ -131,7 +129,7 @@ void find_invalid_ids(range_t id_range, long long int** inval_ids, int* no_inval
             if (memcmp(min, &min[id_range.digits / 2], id_range.digits / 2) == 0)
             {
                 (*no_inval_ids)++;
-                long long int* tmp_inval_ids = realloc(*inval_ids, (*no_inval_ids)*sizeof(long long int));
+                long long int *tmp_inval_ids = realloc(*inval_ids, (*no_inval_ids) * sizeof(long long int));
                 if (tmp_inval_ids == NULL)
                 {
                     if (*no_inval_ids > 0)
@@ -167,8 +165,8 @@ void find_invalid_ids(range_t id_range, long long int** inval_ids, int* no_inval
 
 int main(void)
 {
-    FILE* fp;
-    range_t* ranges = NULL;
+    FILE *fp;
+    range_t *ranges = NULL;
     char input_line[INPUT_LINE_SIZE_MAX];
     long long int sum_of_invalid_ids = 0;
 
@@ -187,7 +185,7 @@ int main(void)
     }
 
     int no_ranges = count_commas(input_line) + 1;
-    ranges = malloc(no_ranges*sizeof(range_t));
+    ranges = malloc(no_ranges * sizeof(range_t));
 
     if (ranges == NULL)
     {
@@ -198,7 +196,7 @@ int main(void)
 
     decode_ranges(input_line, no_ranges, ranges);
 
-    long long int* invalid_ids = NULL;
+    long long int *invalid_ids = NULL;
     int no_invalid_ids = 0;
 
     for (int i = 0; i < no_ranges; i++)
@@ -206,13 +204,13 @@ int main(void)
         find_invalid_ids(ranges[i], &invalid_ids, &no_invalid_ids);
         if (no_invalid_ids > 0)
         {
-            printf("%2d Invalid IDs in range %d-%d (trunk: %d-%d) (digits: %d): ", no_invalid_ids, ranges[i].min, ranges[i].max, ranges[i].min_trunk, ranges[i].max_trunk, ranges[i].digits);
+            printf("%2d Invalid IDs in range %d-%d (trunk: %d-%d) (digits: %d): ", no_invalid_ids, ranges[i].min,
+                   ranges[i].max, ranges[i].min_trunk, ranges[i].max_trunk, ranges[i].digits);
             for (int j = 0; j < no_invalid_ids - 1; j++)
             {
                 printf("%d, ", invalid_ids[j]);
             }
             printf("%d\n", invalid_ids[no_invalid_ids - 1]);
-
 
             for (int j = 0; j < no_invalid_ids; j++)
             {
@@ -228,7 +226,8 @@ int main(void)
         }
         else if (no_invalid_ids == 0)
         {
-            printf("No invalid IDs in range %d-%d (trunk: %d-%d) (digits: %d)\n", ranges[i].min, ranges[i].max, ranges[i].min_trunk, ranges[i].max_trunk, ranges[i].digits);
+            printf("No invalid IDs in range %d-%d (trunk: %d-%d) (digits: %d)\n", ranges[i].min, ranges[i].max,
+                   ranges[i].min_trunk, ranges[i].max_trunk, ranges[i].digits);
         }
     }
 
