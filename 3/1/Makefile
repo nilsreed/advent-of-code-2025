@@ -5,7 +5,7 @@ CC=gcc
 SRC=main.c
 OBJS=$(SRC:.c=.o)
 CFLAGS=
-LDLIBS=-lm
+LDLIBS=
 
 ifeq ($(OS),Windows_NT)
 	EXE_FILE=main.exe
